@@ -1,39 +1,38 @@
-- name: Configuration of mysql server
+- name: mysql configuration
   hosts: mysql
   become: yes
   vars:
-    my_sql_password: ExpenseApp@1
-    host_details: mysql.hemanthkumar.online
+    mysql_root_password: ExpenseApp@1
+    login_host: mysql.hemanthkumar.online
   tasks:
-  - name: installing the pre-required softwares
-    ansible.bulitin.pip:
+  - name: ansible to install pymysql
+    ansible.builtin.pip:
       name:
-        - PyMySQL
+      - PyMySQL
       executable: pip3.9
-
-  - name: installation of mysql server
+  - name: install MySQL Server
     ansible.builtin.package:
       name: mysql-server
       state: present
 
-  - name: configuration of services
+  - name: start mysql server
     ansible.builtin.service:
       name: mysqld
       state: started
       enabled: yes
 
-  - name: connect to mysql server
+  - name: connect mysql server
     community.mysql.mysql_info:
       login_user: root
-      login_password: "{{my_sql_password}}"
-      login_host: "{{host_details}}"
+      login_password: "{{ mysql_root_password }}"
+      login_host: "{{ login_host }}"
     ignore_errors: true
     register: mysql_info
 
-  - name: print the details of mysql info
-    ansible.bulitin.debug:
-      msg: "{{mysql_info}}"
+  - name: print mysql info
+    ansible.builtin.debug:
+      msg: "{{ mysql_info }}"
 
-  - name: setting the mysql_root password
-    ansible.bulitin.command: "mysql_secure_installation --set-root-pass {{my_sql_password}}"
+  - name: setup MySQL root password
+    ansible.builtin.command: "mysql_secure_installation --set-root-pass {{ mysql_root_password }}"
     when: mysql_info.failed is true
